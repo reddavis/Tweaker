@@ -11,15 +11,11 @@ import UIKit
 
 class ViewController: UIViewController
 {
-	var slider1Value: Float = 5.0
-	var slider2Value: Float = 0.0
-	var slider3Value: Float = 0.0
-	
-	var animationDuration: NSTimeInterval = 0.25
+	var animationDuration: NSTimeInterval = 1.0
 	var springDamping: CGFloat = 0.5
 	
 	var tweakerController: TweakerViewController?
-	let square = UIView(frame: CGRectMake(50.0, 50.0, 50.0, 50.0))
+	let square = UIView(frame: CGRectMake(135.0, 50.0, 50.0, 50.0))
 	
 	override func viewDidLoad()
 	{
@@ -40,6 +36,10 @@ class ViewController: UIViewController
 			
 			make.slider().title("Spring Damping").minValue(0.0).maxValue(1.0).value(self.springDamping).valueChanged({ (value) -> Void in
 				self.springDamping = CGFloat(value)
+			})
+			
+			make.switchControl().title("Green?").off().valueChanged({ (on) -> Void in
+				self.square.backgroundColor = on ? UIColor.greenColor() : UIColor.redColor()
 			})
 		})
 	}

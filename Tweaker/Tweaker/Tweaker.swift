@@ -108,7 +108,7 @@ protocol TweakerContructorProtocol: class
     
     func off() -> TweakerSwitchControl
     {
-        self.switchControl.on = true
+        self.switchControl.on = false
         return self
     }
     
