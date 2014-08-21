@@ -154,7 +154,7 @@ protocol TweakerContructorProtocol: class
 	}
 	
 	// TODO: Segmented control
-	
+	// TODO: This name is nasty
 	func switchControl() -> TweakerSwitchControl
 	{
 		let switchControl = UISwitch()
