@@ -221,7 +221,7 @@ protocol TweakerContructorProtocol: class
 		if let tweakerControl = self.controls[control]
 		{
 			switch tweakerControl {
-				case .Switch(let f):
+				case .Switch(let f): // <- WTF?
 					title = f.title
 				case .Slider(let s):
 					title = s.title
