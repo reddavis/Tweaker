@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import MessageUI
 
 
 typealias TweakerSliderChangeBlock = (value: Float) -> Void
@@ -241,6 +242,12 @@ protocol TweakerContructorProtocol: class
 			let slider = control as UISlider
 			description = String(format: "%.2f", slider.value)
 		}
+		else if control.isKindOfClass(UISwitch.self)
+		{
+			let switchControl = control as UISwitch
+			description = switchControl.on ? "On" : "Off"
+
+		}
 		
 		return description
 	}
@@ -255,7 +262,7 @@ protocol TweakerViewControllerDataSource
 	func tweakerViewController(tweakerViewController: TweakerViewController!, descriptiveValueForControlAtIndex index: Int) -> String?
 }
 
-class TweakerViewController: UITableViewController
+class TweakerViewController: UITableViewController, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate
 {
 	var dataSource: TweakerViewControllerDataSource?
 	
@@ -268,6 +275,7 @@ class TweakerViewController: UITableViewController
 		self.title = "Tweaks"
 		
 		self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Done, target: self, action: "doneButtonTapped:")
+		self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Email", style: UIBarButtonItemStyle.Plain, target: self, action: "emailButtonTapped:")
 	}
 	
 	override func viewDidLayoutSubviews()
@@ -294,6 +302,30 @@ class TweakerViewController: UITableViewController
 		self.dismissViewControllerAnimated(true, completion: nil)
 	}
 	
+	func emailButtonTapped(sender: AnyObject)
+	{
+		if MFMailComposeViewController.canSendMail()
+		{
+			let appName: String = NSBundle.mainBundle().objectForInfoDictionaryKey(kCFBundleNameKey as NSString) as String
+			
+			var emailBody = ""
+			let numberOfControls: Int = self.dataSource!.numberOfControls(self) ?? 0
+			for index in 0...(numberOfControls-1)
+			{
+				var title = self.dataSource?.tweakerViewController(self, titleAtIndex: index) ?? "No title"
+				var value = self.dataSource?.tweakerViewController(self, descriptiveValueForControlAtIndex: index) ?? "N\\A"
+				
+				emailBody += String(format: "%@: %@\n", title, value)
+			}
+			
+			let mailComposeViewController = MFMailComposeViewController()
+			mailComposeViewController.mailComposeDelegate = self
+			mailComposeViewController.setSubject(String(format: "Tweaker - %@", appName))
+			mailComposeViewController.setMessageBody(emailBody, isHTML: false)
+			self.presentViewController(mailComposeViewController, animated: true, completion: nil)
+		}
+	}
+	
 	func accessoryViewValueChanged(sender: AnyObject)
 	{
 		for cell in self.tableView.visibleCells()
@@ -316,7 +348,7 @@ class TweakerViewController: UITableViewController
 	
 	override func tableView(tableView: UITableView!, numberOfRowsInSection section: Int) -> Int
 	{
-		return self.dataSource!.numberOfControls(self)
+		return self.dataSource?.numberOfControls(self) ?? 0
 	}
 	
 	// MARK: UITableViewDataSource
@@ -342,5 +374,12 @@ class TweakerViewController: UITableViewController
 		cell?.detailTextLabel.text = self.dataSource!.tweakerViewController(self, descriptiveValueForControlAtIndex: indexPath.row)
 		
 		return cell
+	}
+	
+	// MARK: MFMailComposeViewControllerDelegate
+	
+	func mailComposeController(controller: MFMailComposeViewController!, didFinishWithResult result: MFMailComposeResult, error: NSError!)
+	{
+		controller.dismissViewControllerAnimated(true, completion: nil)
 	}
 }
