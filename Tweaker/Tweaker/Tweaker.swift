@@ -129,8 +129,8 @@ protocol TweakerContructorProtocol: class
 		case Slider(TweakerSliderControl)
 	}
 	
-	let tweakerViewController: TweakerViewController
-	var controls = Dictionary<UIControl, TweakerControl>()
+	private let tweakerViewController: TweakerViewController
+	private var controls = Dictionary<UIControl, TweakerControl>()
 	
 	// MARK: Initialization
 	
@@ -265,6 +265,9 @@ protocol TweakerViewControllerDataSource
 class TweakerViewController: UITableViewController, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate
 {
 	var dataSource: TweakerViewControllerDataSource?
+	private var numberOfControls: Int {
+		get { return self.dataSource?.numberOfControls(self) ?? 0 }
+	}
 	
 	// MARK: View lifecycle
 	
@@ -309,8 +312,7 @@ class TweakerViewController: UITableViewController, MFMailComposeViewControllerD
 			let appName: String = NSBundle.mainBundle().objectForInfoDictionaryKey(kCFBundleNameKey as NSString) as String
 			
 			var emailBody = ""
-			let numberOfControls: Int = self.dataSource!.numberOfControls(self) ?? 0
-			for index in 0...(numberOfControls-1)
+			for index in 0...(self.numberOfControls-1)
 			{
 				var title = self.dataSource?.tweakerViewController(self, titleAtIndex: index) ?? "No title"
 				var value = self.dataSource?.tweakerViewController(self, descriptiveValueForControlAtIndex: index) ?? "N\\A"
@@ -348,7 +350,7 @@ class TweakerViewController: UITableViewController, MFMailComposeViewControllerD
 	
 	override func tableView(tableView: UITableView!, numberOfRowsInSection section: Int) -> Int
 	{
-		return self.dataSource?.numberOfControls(self) ?? 0
+		return self.numberOfControls
 	}
 	
 	// MARK: UITableViewDataSource
