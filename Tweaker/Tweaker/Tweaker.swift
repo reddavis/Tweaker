@@ -13,6 +13,7 @@ import MessageUI
 
 typealias TweakerSliderChangeBlock = (value: Float) -> Void
 typealias TweakerSwitchChangeBlock = (on: Bool) -> Void
+typealias TweakerSegmentedControlChangeBlock = (index: Int) -> Void
 
 
 protocol TweakerContructorProtocol: class
@@ -40,7 +41,7 @@ protocol TweakerContructorProtocol: class
     
     required init(control: UIControl)
     {
-        self.control = control as UISlider
+        self.control = control
     }
     
 	// MARK: API
@@ -90,7 +91,7 @@ protocol TweakerContructorProtocol: class
     
     required init(control: UIControl)
     {
-        self.control = control as UISwitch
+        self.control = control
     }
     
 	// MARK: API
@@ -120,6 +121,57 @@ protocol TweakerContructorProtocol: class
     }
 }
 
+@objc class TweakerSegmentedControl: TweakerContructorProtocol
+{
+	var title: String?
+	var control: UIControl
+	var valueChangedBlock: TweakerSegmentedControlChangeBlock?
+	
+	var segmentedControl: UISegmentedControl {
+		return self.control as UISegmentedControl
+	}
+	
+	// MARK: Initialization
+	
+	required init(control: UIControl)
+	{
+		self.control = control
+	}
+	
+	// MARK: API
+	
+	func title(title: String) -> TweakerSegmentedControl
+	{
+		self.title = title
+		return self
+	}
+	
+	func addSegment(title: String, selected: Bool = false) -> TweakerSegmentedControl
+	{
+		let segmentIndex = self.segmentedControl.numberOfSegments
+		self.segmentedControl.insertSegmentWithTitle(title, atIndex: segmentIndex, animated: false)
+		
+		if selected
+		{
+			self.segmentedControl.selectedSegmentIndex = segmentIndex
+		}
+		
+		return self
+	}
+	
+	func selectedSegmentIndex(index: Int) -> TweakerSegmentedControl
+	{
+		self.segmentedControl.selectedSegmentIndex = index
+		return self
+	}
+	
+	func valueChanged(block: TweakerSegmentedControlChangeBlock) -> TweakerSegmentedControl
+	{
+		self.valueChangedBlock = block
+		return self
+	}
+}
+
 
 @objc class TweakerMaker: TweakerViewControllerDataSource
 {
@@ -127,6 +179,7 @@ protocol TweakerContructorProtocol: class
 	{
 		case Switch(TweakerSwitchControl)
 		case Slider(TweakerSliderControl)
+		case SegmentedControl(TweakerSegmentedControl)
 	}
 	
 	private let tweakerViewController: TweakerViewController
@@ -154,7 +207,17 @@ protocol TweakerContructorProtocol: class
 		return tweakerControl
 	}
 	
-	// TODO: Segmented control
+	func segmentedControl() -> TweakerSegmentedControl
+	{
+		let segmentedControl = UISegmentedControl(items: [])
+		segmentedControl.addTarget(self, action: "segmentedControlValueChanged:", forControlEvents: UIControlEvents.ValueChanged)
+		
+		let tweakerControl = TweakerSegmentedControl(control: segmentedControl)
+		self.controls.updateValue(TweakerControl.SegmentedControl(tweakerControl), forKey: segmentedControl)
+		
+		return tweakerControl
+	}
+	
 	// TODO: This name is nasty
 	func switchControl() -> TweakerSwitchControl
 	{
@@ -169,9 +232,25 @@ protocol TweakerContructorProtocol: class
 	
 	// MARK: Actions
 	
+	func segmentedControlValueChanged(sender: AnyObject)
+	{
+		let segmentedControl = sender as UISegmentedControl
+		if let tweakerControl = self.controls[segmentedControl]
+		{
+			switch tweakerControl {
+			case .SegmentedControl(let s):
+				if let block = s.valueChangedBlock
+				{
+					block(index: segmentedControl.selectedSegmentIndex)
+				}
+			default: ()
+			}
+		}
+	}
+	
 	func sliderValueChanged(sender: AnyObject)
 	{
-		var slider = sender as UISlider
+		let slider = sender as UISlider
 		if let tweakerControl = self.controls[slider]
 		{
 			switch tweakerControl {
@@ -187,7 +266,7 @@ protocol TweakerContructorProtocol: class
     
     func switchValueChanged(sender: AnyObject)
     {
-        var switchControl = sender as UISwitch
+        let switchControl = sender as UISwitch
 		if let tweakerControl = self.controls[switchControl]
 		{
 			switch tweakerControl {
@@ -226,6 +305,8 @@ protocol TweakerContructorProtocol: class
 					title = f.title
 				case .Slider(let s):
 					title = s.title
+				case .SegmentedControl(let s):
+					title = s.title
 			}
 		}
 		
@@ -246,7 +327,11 @@ protocol TweakerContructorProtocol: class
 		{
 			let switchControl = control as UISwitch
 			description = switchControl.on ? "On" : "Off"
-
+		}
+		else if control.isKindOfClass(UISegmentedControl.self)
+		{
+			let segmentedControl = control as UISegmentedControl
+			description = segmentedControl.titleForSegmentAtIndex(segmentedControl.selectedSegmentIndex)
 		}
 		
 		return description
