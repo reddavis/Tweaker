@@ -10,7 +10,7 @@ Tweaker is a library that makes it easy to play around with values (e.g. animati
 > **- Urban Dictionary**
 
 ## Overview
-![](https://www.dropbox.com/s/o4whropyi65l9na/tweaker.gif?dl=1)
+![](https://www.dropbox.com/s/m1y4dg1r1anqfuw/tweaker%20%282%29.gif?dl=1)
 
 ## Example
 ```swift
@@ -21,6 +21,7 @@ class ViewController: UIViewController
 {
 	var animationDuration: NSTimeInterval = 1.0
 	var springDamping: CGFloat = 0.5
+	var animationCurve: UIViewAnimationOptions = UIViewAnimationOptions.CurveEaseInOut
 	
 	var tweakerController: TweakerViewController?
 	let square = UIView(frame: CGRectMake(135.0, 50.0, 50.0, 50.0))
@@ -49,6 +50,16 @@ class ViewController: UIViewController
 			make.switchControl().title("Green?").off().valueChanged({ (on) -> Void in
 				self.square.backgroundColor = on ? UIColor.greenColor() : UIColor.redColor()
 			})
+			
+			make.segmentedControl().title("Curve").addSegment("Ease in out", selected: true).addSegment("Ease out").valueChanged({ (index) -> Void in
+				switch index {
+				case 0:
+					self.animationCurve = UIViewAnimationOptions.CurveEaseInOut
+				case 1:
+					self.animationCurve = UIViewAnimationOptions.CurveEaseOut
+				default: ()
+				}
+			})
 		})
 	}
 
@@ -72,10 +83,10 @@ class ViewController: UIViewController
 		var newFrame = self.square.frame
 		newFrame.origin.y = 200.0
 		
-		UIView.animateWithDuration(self.animationDuration, delay: 0.0, usingSpringWithDamping: self.springDamping, initialSpringVelocity: 0.0, options: .CurveEaseInOut, animations: ({
+		UIView.animateWithDuration(self.animationDuration, delay: 0.0, usingSpringWithDamping: self.springDamping, initialSpringVelocity: 0.0, options: self.animationCurve, animations: ({
 			self.square.frame = newFrame
 		}), completion: {(complete: Bool) -> Void in
-			UIView.animateWithDuration(self.animationDuration, delay: 0.0, usingSpringWithDamping: self.springDamping, initialSpringVelocity: 0.0, options: .CurveEaseInOut, animations: ({
+			UIView.animateWithDuration(self.animationDuration, delay: 0.0, usingSpringWithDamping: self.springDamping, initialSpringVelocity: 0.0, options: self.animationCurve, animations: ({
 				self.square.frame = originalFrame
 			}), completion: {(complete: Bool) -> Void in
 				
