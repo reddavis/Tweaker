@@ -417,48 +417,48 @@ class TweakerViewController: UITableViewController, MFMailComposeViewControllerD
 	{
 		for cell in self.tableView.visibleCells()
 		{
-			let tableViewCell = cell as? UITableViewCell
+			let tableViewCell = cell as UITableViewCell
 			if cell.accessoryView == (sender as UIControl)
 			{
-				var indexPath = self.tableView.indexPathForCell(tableViewCell)
-				tableViewCell?.detailTextLabel.text = self.dataSource?.tweakerViewController(self, descriptiveValueForControlAtIndex: indexPath.row)
+				let indexPath = self.tableView.indexPathForCell(tableViewCell)!
+				tableViewCell.detailTextLabel?.text = self.dataSource?.tweakerViewController(self, descriptiveValueForControlAtIndex: indexPath.row)
 			}
 		}
 	}
 	
 	// MARK: UITableViewDataSource
 	
-	override func numberOfSectionsInTableView(tableView: UITableView!) -> Int
+	override func numberOfSectionsInTableView(tableView: UITableView) -> Int
 	{
 		return 1
 	}
 	
-	override func tableView(tableView: UITableView!, numberOfRowsInSection section: Int) -> Int
+	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
 	{
 		return self.numberOfControls
 	}
 	
 	// MARK: UITableViewDataSource
 	
-	override func tableView(tableView: UITableView!, cellForRowAtIndexPath indexPath: NSIndexPath!) -> UITableViewCell!
+	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
 	{
 		let cellIdentifier = "cellIdentifier"
-		var cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as? UITableViewCell
+		var cell: UITableViewCell! = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as? UITableViewCell
 		if cell == nil
 		{
 			cell = UITableViewCell(style: UITableViewCellStyle.Subtitle, reuseIdentifier: cellIdentifier)
 		}
 		
-		cell?.selectionStyle = UITableViewCellSelectionStyle.None
+		cell.selectionStyle = UITableViewCellSelectionStyle.None
 		
 		var accessoryView = self.dataSource!.tweakerViewController(self, controlAtIndex: indexPath.row);
-		cell?.accessoryView = accessoryView
+		cell.accessoryView = accessoryView
 		accessoryView.addTarget(self, action: "accessoryViewValueChanged:", forControlEvents: UIControlEvents.ValueChanged)
 		
 		var title = self.dataSource!.tweakerViewController(self, titleAtIndex: indexPath.row)
-		cell?.textLabel.text = title
+		cell.textLabel?.text = title
 		
-		cell?.detailTextLabel.text = self.dataSource!.tweakerViewController(self, descriptiveValueForControlAtIndex: indexPath.row)
+		cell.detailTextLabel?.text = self.dataSource!.tweakerViewController(self, descriptiveValueForControlAtIndex: indexPath.row)
 		
 		return cell
 	}
